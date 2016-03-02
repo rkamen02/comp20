@@ -1,0 +1,27 @@
+/* stylesheet for horserace website */
+
+#lyrics {
+	text-align: center;
+	font-size: 32px;
+	font: Georgia;
+}
+
+#music_video {
+	display: block;
+	margin: 0 auto;
+}
+
+img {
+	text-align: center;
+}
+
+body {
+	background-color: rgb(6, 135, 70);
+}
+
+h1 {
+	text-align: center;
+	font: Georgia;
+	font-size: 40px;
+	font-style: bold;
+}
