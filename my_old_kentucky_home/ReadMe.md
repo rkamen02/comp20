@@ -1,6 +1,6 @@
 # ReadMe for horse video website
 
-1. Having a ton of trouble with git. Still not sure about setting up remote branches. Other than that, website is working really well.
+1. Had a ton of trouble with git. Still not sure about setting up remote branches. Other than that, website is working really well.
 
 2. I have not collaborated with anyone.
 
