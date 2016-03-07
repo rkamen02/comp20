@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+		<title> Landmarks </title>
+		<link rel="stylesheet" href="style.css" type="text/css" />
+		<script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+		<script>
+
+			var map;
+			var lat = 0;
+			var lng = 0;
+			// figure out what this is
+			var login = "THERESE_COOKE";
+			var yourWindow = new google.maps.InfoWindow();
+			var req = new XMLHttpRequest();
+
+			// make request to data of other classmates
+			req.open("POST", "https://defense-in-derpth.herokuapp.com/sendLocation", true);
+
+			req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+			// when data has been received
+			req.onreadystatechange = function(){
+				if (status == 200 && req.readyState == 4) {
+					result = "";
+					raw = req.responseText;
+					data = JSON.parse(raw);
+					words.innerHTML = req.responseText;
+				}
+			}
+
+			req.send("login=" + login + "&lat=" + lat + "&lng=" + lng);
+
+
+			function init_map(){		
+				// start by getting current location
+				getLocation();
+
+			}
+
+			function finish_map(){
+				// configure map settings
+				loc = new google.maps.LatLng(lat,lng);
+				console.log(loc);
+				map_settings = { center: loc, zoom: 15 };
+				
+				// generate map
+				map = new google.maps.Map(document.getElementById('map_drop'), map_settings);
+
+				// put stuff on the map
+				displayMap();
+			}
+
+			function displayMap(){
+
+				// generate the user's marker
+				yourMarker();
+
+
+			}
+
+			// creates the user's marker
+			function yourMarker(){
+
+				// create a marker
+				you = new google.maps.Marker({
+					position: loc, 
+					title: closestLandmark(),
+					//icon: "hippo.jpg",
+					// change size of icon
+					// set polyline
+				});
+				you.setMap(map);
+
+				// user's info window
+				google.maps.event.addListener(you, 'click', function(){
+					yourWindow.setContent(you.title);
+					yourWindow.open(map, you);
+				});
+			
+			}
+
+			// returns string with closest landmark to user and distance
+			function closestLandmark(){
+
+				return "make this function";
+			}
+
+			// gets location of the user
+			function getLocation(){
+				navigator.geolocation.getCurrentPosition(function(position){
+					lat = position.coords.latitude;
+					lng = position.coords.longitude;
+					finish_map();
+				});
+			}
+
+
+
+		</script>
+	</head>
+
+	<body onload="init_map()">
+		<div id="words" ></div>
+		<div id="map_drop"></div>
+
+	</body>
+
+
+</html>
