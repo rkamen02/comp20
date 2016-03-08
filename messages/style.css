@@ -1,1 +1,12 @@
-/* Your CSS here... */
+h1 {
+	color: blue;
+	text-align: center;
+}
+
+#messages {
+	color: red;
+}
+
+body {
+	background-color: yellow;
+}
