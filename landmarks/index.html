@@ -26,9 +26,6 @@
 			req.onreadystatechange = function(){
 				if (req.readyState == 4) {
 					locations = JSON.parse(req.responseText);
-					//display_data();
-									makePeopleMarkers();
-				makeYourMarker();
 				}
 			}
 
@@ -55,18 +52,22 @@
 
 			// loads basic map onto the site
 			function make_map(){
+
 				// configure map settings
 				map_settings = { center: loc, zoom: 15 };
 				
 				// generate map
 				map = new google.maps.Map(document.getElementById('map_drop'), map_settings);
+				
+				// display the user data on that map
+				var min = 0;
+				display_data();
 			}
 
 
 			// displays class data on map
 			function display_data(){
 
-				console.log("in display data");
 				//makeLandmarkMarkers();
 				makePeopleMarkers();
 				makeYourMarker();
@@ -79,7 +80,6 @@
 			function makeLandmarkMarkers(){
 
 				// make markers for landmarks
-				min = 0;
 				for (var i = 0; i < locations.landmarks.length; i++){
 					
 					landLat = locations.landmarks[i].lat;
@@ -100,6 +100,12 @@
 					});
 
 					marker.setMap(map);
+
+					// give marker an info window
+					google.maps.event.addListener(you, 'click', function(){
+						infowindow.setContent(marker.title);
+						infowindow.open(map, marker);
+					});
 				}
 			}
 
@@ -107,21 +113,33 @@
 			// make markers for people
 			function makePeopleMarkers(){
 
-			console.log("in peoplemarkers");
-			console.log(locations);
+				// format icon that will represent people
+				var personIcon = new google.maps.MarkerImage(
+					"person.png",
+					null,
+					null,
+					null,
+					new google.maps.Size(30, 30)
+				);
+
 				for (var i = 0; i < locations.people.length; i++){
-console.log("in for loop");
+
 					var personLat = locations.people[i].lat;
 					var personLng = locations.people[i].lng;
-console.log("person lat: " + personLat);
+
 					var marker = new google.maps.Marker({
-							position: {lat: personLat, lng: personLng},
-							title: locations.people[i].login + " is " + haversine(personLat, personLng) + " miles away",
-							icon: "person.png"
-							// change size of icon
-						});
+						position: {lat: personLat, lng: personLng},
+						title: locations.people[i].login + " is " + haversine(personLat, personLng) + " miles away",
+						icon: personIcon
+					});
 
 					marker.setMap(map);
+
+					// give marker an info window
+					google.maps.event.addListener(marker, 'click', function(){
+						infowindow.setContent(marker.title);
+						infowindow.open(map, marker);
+					});
 				}
 			}
 
@@ -129,13 +147,19 @@ console.log("person lat: " + personLat);
 			// marker for yourself
 			function makeYourMarker(){
 
-console.log("in your  marker");
+				var yourIcon = new google.maps.MarkerImage(
+					"mouse.png",
+					null,
+					null,
+					null,
+					new google.maps.Size(50, 50)
+				);
+
 				you = new google.maps.Marker({
 					position: loc, 
 					//title: "Closest landmark: " + locations.landmarks[i].name + " at " + haversine(locations.landmarks[i].lat, locations.landmarks[i].lng) + " miles away.",
 					title: "figure out landmark thing",
-					icon: "mouse.png",
-					// change size of icon
+					icon: yourIcon
 				});
 				you.setMap(map);
 
