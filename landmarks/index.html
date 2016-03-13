@@ -6,8 +6,16 @@
 		<link rel="stylesheet" href="style.css" type="text/css" />
 		<script src="http://maps.google.com/maps/api/js?sensor=true"></script>
 		<script>
+/*
+ish:
+- reconsile #5 on top set of requirements
+- make polyline
+- finish readme
+- make everything look pretty
+- fix haversine
+*/
 
-			// reorganize order of functions
+
 			var map;
 			var lat = 0;
 			var lng = 0;
@@ -15,23 +23,32 @@
 			var infowindow = new google.maps.InfoWindow();
 			var req = new XMLHttpRequest();
 			var loc;
+			var min = 0;
 
-			// make request to data of other classmates
-			req.open("POST", "https://defense-in-derpth.herokuapp.com/sendLocation", true);
 
-			req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			function sendData(){
+				// make request to data of other classmates
+				req.open("POST", "https://defense-in-derpth.herokuapp.com/sendLocation", true);
 
-			// check how lat/lng are getting sent. user's are still 0/0
-			// when data has been received
-			req.onreadystatechange = function(){
-				if (req.readyState == 4) {
-					locations = JSON.parse(req.responseText);
+				req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+				// when data has been received
+				req.onreadystatechange = function(){
+					if (req.readyState == 4 && req.status == 200) {
+						locations = JSON.parse(req.responseText);
+						console.log(locations);
+						// display the user data on that map
+						display_data();
+					} else if (req.readyState == 4 && req.status != 200){
+						// add something here
+					}
 				}
+
+				req.send("login=" + login + "&lat=" + lat + "&lng=" + lng);
+
 			}
 
-			req.send("login=" + login + "&lat=" + lat + "&lng=" + lng);
-			
-
+			// start rendering the map!
 			function init_map(){	
 
 				// start by getting current location
@@ -47,6 +64,7 @@
 					loc = new google.maps.LatLng(lat,lng);
 					
 					make_map();
+					sendData();
 				});
 			}
 
@@ -59,50 +77,54 @@
 				// generate map
 				map = new google.maps.Map(document.getElementById('map_drop'), map_settings);
 				
-				// display the user data on that map
-				var min = 0;
-				display_data();
 			}
 
 
 			// displays class data on map
 			function display_data(){
 
-				//makeLandmarkMarkers();
+				makeLandmarkMarkers();
 				makePeopleMarkers();
 				makeYourMarker();
-
-				// make polyline
-
+				//makePolyline();
 			}
+
 
 			// creates all markers for people and landmarks
 			function makeLandmarkMarkers(){
 
+				// format landmark icon
+				var landmarkIcon = new google.maps.MarkerImage(
+					"temple.png",
+					null,
+					null,
+					null,
+					new google.maps.Size(30, 30)
+				);
+
 				// make markers for landmarks
 				for (var i = 0; i < locations.landmarks.length; i++){
 					
-					landLat = locations.landmarks[i].lat;
-					landLng = locations.landmarks[i].lng;
+					landLat = locations.landmarks[i].geometry.coordinates[1];
+					landLng = locations.landmarks[i].geometry.coordinates[0];
 
 					// check whether it's the closest landmark to the user
 					var dist = haversine(landLat, landLng);
-					if (dist < haversine(locations.landmarks[min].lat, locations.landmarks[min].lng)){
+					if (dist < haversine(locations.landmarks[min].geometry.coordinates[1], locations.landmarks[min].geometry.coordinates[0])){
 						min = i;
 					}
 
 					// make landmark marker
 					var marker = new google.maps.Marker({
 						position: {lat: landLat, lng: landLng},
-						title: locations.landmarks[i].name,
-						icon: "temple.png"
-						// change size of icon
+						title: locations.landmarks[i].properties.Details,
+						icon: landmarkIcon
 					});
 
 					marker.setMap(map);
 
 					// give marker an info window
-					google.maps.event.addListener(you, 'click', function(){
+					google.maps.event.addListener(marker, 'click', function(){
 						infowindow.setContent(marker.title);
 						infowindow.open(map, marker);
 					});
@@ -119,14 +141,16 @@
 					null,
 					null,
 					null,
-					new google.maps.Size(30, 30)
+					new google.maps.Size(23, 30)
 				);
 
 				for (var i = 0; i < locations.people.length; i++){
 
 					var personLat = locations.people[i].lat;
 					var personLng = locations.people[i].lng;
-
+					console.log(personLat);
+					console.log(personLng);
+console.log("person's distance: " + haversine(personLat, personLng));
 					var marker = new google.maps.Marker({
 						position: {lat: personLat, lng: personLng},
 						title: locations.people[i].login + " is " + haversine(personLat, personLng) + " miles away",
@@ -158,7 +182,7 @@
 				you = new google.maps.Marker({
 					position: loc, 
 					//title: "Closest landmark: " + locations.landmarks[i].name + " at " + haversine(locations.landmarks[i].lat, locations.landmarks[i].lng) + " miles away.",
-					title: "figure out landmark thing",
+					title: "closest landmark is " + locations.landmarks[min].properties.Location_Name,
 					icon: yourIcon
 				});
 				you.setMap(map);
@@ -171,32 +195,40 @@
 			
 			}
 
+
 			// returns number distance from you
 			// CODE TAKEN FROM http://stackoverflow.com/questions/14560999/using-the-haversine-formula-in-javascript
 			// many thanks to talkol
 			function haversine(newLat, newLng){
 
-				var R = 3958.756;
-				var x1 = newLat-lat;
-				var dLat = x1.toRad();  
-				var x2 = newLng-lng;
-				var dLon = x2.toRad();  
-				var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
-						Math.cos(lat.toRad()) * Math.cos(newLat.toRad()) * 
-						Math.sin(dLon/2) * Math.sin(dLon/2);  
-				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-				var d = R * c;
+				var R = 3958.756;	// miles
+				console.log("lat: " + newLat + " lng: " + newLng);
+				var t1 = toRad(lat);
+				var t2 = toRad(newLat);
+				var dt = toRad(newLat - lat);
+				var dl = toRad(newLng - lng);
 
-				return d;
+				var a = Math.sin(dt/2) * Math.sin(dt/2) +
+						Math.cos(t1) * Math.cos(t2) *
+						Math.sin(dl/2) * Math.sin(dl/2);
+				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+				var d = R * c;
+				
+
 			}
 
 			// converts number to radian
 			// CODE TAKEN FROM http://stackoverflow.com/questions/14560999/using-the-haversine-formula-in-javascript
 			// many thanks to talkol
-			Number.prototype.toRad = function() {
-   				return this * Math.PI / 180;
+			function toRad(num) {
+   				return num * Math.PI / 180;
 			}
 
+			// makes polyline between user and closest landmark
+			function makePolyline(){
+
+
+			}
 			
 
 
