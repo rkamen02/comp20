@@ -6,15 +6,6 @@
 		<link rel="stylesheet" href="style.css" type="text/css" />
 		<script src="http://maps.google.com/maps/api/js?sensor=true"></script>
 		<script>
-/*
-ish:
-- reconsile #5 on top set of requirements
-- make polyline
-- finish readme
-- make everything look pretty
-- fix haversine
-*/
-
 
 			var map;
 			var lat = 0;
@@ -24,6 +15,7 @@ ish:
 			var req = new XMLHttpRequest();
 			var loc;
 			var min = 0;
+			var locations;
 
 
 			function sendData(){
@@ -36,11 +28,8 @@ ish:
 				req.onreadystatechange = function(){
 					if (req.readyState == 4 && req.status == 200) {
 						locations = JSON.parse(req.responseText);
-						console.log(locations);
 						// display the user data on that map
 						display_data();
-					} else if (req.readyState == 4 && req.status != 200){
-						// add something here
 					}
 				}
 
@@ -86,7 +75,7 @@ ish:
 				makeLandmarkMarkers();
 				makePeopleMarkers();
 				makeYourMarker();
-				//makePolyline();
+				makePolyline();
 			}
 
 
@@ -125,8 +114,8 @@ ish:
 
 					// give marker an info window
 					google.maps.event.addListener(marker, 'click', function(){
-						infowindow.setContent(marker.title);
-						infowindow.open(map, marker);
+						infowindow.setContent(this.title);
+						infowindow.open(map, this);
 					});
 				}
 			}
@@ -148,9 +137,7 @@ ish:
 
 					var personLat = locations.people[i].lat;
 					var personLng = locations.people[i].lng;
-					console.log(personLat);
-					console.log(personLng);
-console.log("person's distance: " + haversine(personLat, personLng));
+
 					var marker = new google.maps.Marker({
 						position: {lat: personLat, lng: personLng},
 						title: locations.people[i].login + " is " + haversine(personLat, personLng) + " miles away",
@@ -161,8 +148,8 @@ console.log("person's distance: " + haversine(personLat, personLng));
 
 					// give marker an info window
 					google.maps.event.addListener(marker, 'click', function(){
-						infowindow.setContent(marker.title);
-						infowindow.open(map, marker);
+						infowindow.open(map, this);
+						infowindow.setContent(this.title);
 					});
 				}
 			}
@@ -202,7 +189,6 @@ console.log("person's distance: " + haversine(personLat, personLng));
 			function haversine(newLat, newLng){
 
 				var R = 3958.756;	// miles
-				console.log("lat: " + newLat + " lng: " + newLng);
 				var t1 = toRad(lat);
 				var t2 = toRad(newLat);
 				var dt = toRad(newLat - lat);
@@ -213,8 +199,8 @@ console.log("person's distance: " + haversine(personLat, personLng));
 						Math.sin(dl/2) * Math.sin(dl/2);
 				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 				var d = R * c;
+				return d;
 				
-
 			}
 
 			// converts number to radian
@@ -227,7 +213,14 @@ console.log("person's distance: " + haversine(personLat, personLng));
 			// makes polyline between user and closest landmark
 			function makePolyline(){
 
+				var polyline = new google.maps.Polyline({
+					path: [loc, {lat: locations.landmarks[min].geometry.coordinates[1], lng: locations.landmarks[min].geometry.coordinates[0]}],
+					geodesic: true,
+					strokeColor: '#FF0000',
+					strokeWeight: 5
+				});
 
+				polyline.setMap(map);
 			}
 			
 
