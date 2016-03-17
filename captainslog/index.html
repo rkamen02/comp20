@@ -6,7 +6,73 @@
 	<title>Captain's Log</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 	<script>
-	  // Your work will be done here...
+		$(document).ready(function(){
+
+			var d = new Date();
+			var month;
+			var day;
+			var n;
+
+			$("#msg").keypress(function(event){
+				if (event.which == 13){
+					getDay();
+					getMonth();
+					$("#log").prepend(day + ', ' + month + ' ' + d.getUTCDate() + ', ' + d.getUTCHours() + ':' + d.getUTCMinutes() + ':' + d.getUTCSeconds() + ' ' + d.getUTCFullYear() + ' UTC' + ' - ' + $('input').val() + '<br>');
+					$('input').val("");
+
+				}
+			});
+
+			function getDay(){
+				n = d.getUTCDay();
+				if (n == 0){
+					day = 'Mon';
+				} else if (n == 1){
+					day = 'Tues';
+				} else if (n == 2){
+					day = 'Wed';
+				} else if (n == 3){
+					day = 'Thu';
+				} else if (n == 4){
+					day = 'Fri';
+				} else if (n == 5){
+					day = 'Sat';
+				} else if (n == 6){
+					day = 'Sun';
+				}
+			}
+
+			function getMonth(){
+				n = d.getUTCMonth();
+				if (n == 0){
+					month = 'Jan';
+				} else if (n == 1){
+					month = 'Feb';
+				} else if (n == 2){
+					month = 'Mar';
+				} else if (n == 3){
+					month = 'Apr';
+				} else if (n == 4){
+					month = 'May';
+				} else if (n == 5){
+					month = 'June';
+				} else if (n == 6){
+					month = 'July';
+				} else if (n == 7){
+					month = 'Aug';
+				} else if (n == 8){
+					month = 'Sept';
+				} else if (n == 9){
+					month = 'Oct';
+				} else if (n == 10){
+					month = 'Nov';
+				} else if (n == 11){
+					month = 'Dec';
+				}
+			}
+
+
+		});
 	</script>
 </head>
 
