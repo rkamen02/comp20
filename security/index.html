@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Security</title>
+	</head>
+	<body>
+		<h1>Security</h1>
+		<h3>Introduction</h3>
+		<p>This person's assignment 2 displays a Google Map with local landmarks and everyone else in the class who is nearby. It is served by assignment 3. My job was to break this person's code and find security issues.</p>
+		<h3>Methodology</h3>
+		<p>By     </p>
+		<h3>Abstract of Findings</h3>
+		<p>I found that this website would be surprisingly easy to hack if the user had malicious intent. The maker of the website should dedicate some time on making the site and server less vulnerable to attacks.</p>
+		<h3>Issues Found</h3>
+		<p>Cross-Site Scripting (XSS)</p>
+		<ul>
+			<li>Page found: /sendLocations</li>
+			<li>Severity: it can be anything from trivial (a pop-up) to very serious ("send all of this computer's data to myemail@comcast.net") depending on how malicious the attacker decides to be with their script.</li>
+			<li><img src="XSS" alt="XSS"></li>
+			<li><img src="XSS_result" alt="XSS_result"></li>
+			<li>Description: the user sends a malicious script as one of the post variables to /sendLocations, and the script is loaded when the user loads the homepage.</li>
+			<li>Recommendation: sanitize user input. Get rid of all carrots to make sure variables aren't confused for HTML code.</li>
+		</ul>
+		<p>URL Mongo Injection</p>
+		<ul>
+			<li>Page found: /checkins.json</li>
+			<li>Severity: very severe. This exposes the entire database, which could have locations along with real names and passwords. It's a huge privacy issue.</li>
+			<li><img src="urlencoded" alt="urlencoded"></li>
+			<li>Description: by adding [$gt] to the login query, I was able to send a "true" statement to Mongo, which interpereted the resulting find() command to mean "return all instances of login."</li>
+			<li>Recommendation: sanitize query input for all "$" operators. Keep certain data in separate databases so that if this happens again it won't expose ALL of the information.</li>
+		</ul>
+		<p>URL Mongo Injection redux</p>
+		<ul>
+			<li>Page found: /checkins.json</li>
+			<li>Severity: it's also a security issue! I could use the query bar to send a "remove()" command to the server's database and suddenly wipe out everything in it.</li>
+			<li>Recommendation: sanitize user input! Same as before.</li>
+		</ul>
+		<h3>Conclusion</h3>
+		<p>It's very easy to hack both the website and the server with a little experience and luck. Analyzing the user's input and making sure to sanitize for all characters that represent commands are key.</p>
+	</body>
+</html>
