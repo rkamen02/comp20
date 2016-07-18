@@ -1,0 +1,88 @@
+/**
+ * Compare two JSON strings
+ * Author: Ken Kopelson
+ */
+module.exports.compareStr = function(str1, str2) {
+  return this.compare(JSON.parse(str1),JSON.parse(str2));
+};
+
+
+/**
+ * Compare two JSON objects to see if they represent the same information
+ * Note: this is only for JSON objects, which is a subset of Javascript Objects
+ * Author: Ken Kopelson
+ */
+module.exports.compare = function(obj1, obj2) {
+  var count1 = 0;
+  if (obj1 && obj2) {
+    for (var k in obj1) {
+      if (obj1.hasOwnProperty(k)) {
+        ++count1;
+        var frObj = obj1[k];
+        var toObj = obj2[k];
+        if ('object' !== typeof frObj) {
+          if (frObj !== toObj)
+            return false;
+        }
+        else if (frObj instanceof Date) {
+          if (!(toObj instanceof Date))
+            return false;
+          if (frObj.getTime() !== toObj.getTime())
+            return false;
+        }
+        else if ('object' === typeof frObj) {
+          /**
+           * This will handle objects and arrays
+           */
+          if ('object' !== typeof toObj)
+            return false;
+          if (!this.compare(frObj, toObj))
+            return false;
+        }
+        else {
+          throw new Error('Invalid type encountered by JSON compare');
+        }
+      }
+    }
+  }
+  else
+    return false;
+  return count1 === Object.keys(obj2).length;
+};
+
+
+/**
+ * Deep copies all the members of one JSON object into another JSON object
+ * WARNING: this ONLY works for JSON objects, NOT Javascript objects
+ * @param obj1 source object holding the new field values
+ * @param obj2 destination object
+ * @returns {boolean}
+ */
+module.exports.updateObj = function(obj1, obj2) {
+  if (obj1) {
+    for (var k in obj1) {
+      if (obj1.hasOwnProperty(k)) {
+        var frObj = obj1[k];
+        var toObj = obj2[k];
+        if ('object' !== typeof frObj) {
+          obj2[k] = frObj;
+        }
+        else {
+          if (frObj instanceof Date){
+            obj2[k] = new Date(frObj.getTime());
+          }
+          else if (frObj instanceof Array) {
+            // Always make the target array new...
+            obj2[k] = [];
+            this.updateObj(frObj, obj2[k]);
+          }
+          else if (frObj instanceof Object){
+            if (!toObj)
+              obj2[k] = {};
+            this.updateObj(frObj, obj2[k]);
+          }
+        }
+      }
+    }
+  }
+};
